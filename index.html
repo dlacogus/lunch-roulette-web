@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>오늘 뭐 먹지</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <div class="banners" id="banners" role="status"></div>
+
+    <header class="header">
+      <span class="header__logo" aria-hidden="true">🍱</span>
+      <h1 class="header__title">오늘 뭐 먹지</h1>
+    </header>
+
+    <nav class="week-nav" aria-label="주간 이동">
+      <button type="button" class="week-nav__arrow" data-action="prev-week" aria-label="이전 주">◀</button>
+      <span class="week-nav__label" id="week-label"></span>
+      <button type="button" class="week-nav__arrow" data-action="next-week" aria-label="다음 주">▶</button>
+    </nav>
+
+    <div class="tabs" id="tabs" role="group" aria-label="요일 선택"></div>
+
+    <section class="roulette" id="roulette" aria-live="polite"></section>
+
+    <section class="cards" id="cards"></section>
+  </div>
+
+  <script src="js/menus.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/date.js"></script>
+  <script src="js/status.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
