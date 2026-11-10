@@ -22,6 +22,18 @@ window.App = window.App || {};
     return Number(price).toLocaleString('ko-KR') + '원';
   }
 
+  // 네이버 지도 검색: 주소를 붙이면 그 위치에 핀이 찍히고 "도착" 버튼으로 길 찾기가 된다
+  const NAVER_MAP_SEARCH = 'https://map.naver.com/p/search/';
+
+  // 새 탭으로 여는 외부 링크
+  function externalLink(className, text, href) {
+    const a = el('a', className, text);
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    return a;
+  }
+
   // http(s) 링크만 허용 (가져온 백업 파일에 javascript: 같은 값이 들어와도 막는다)
   function isSafeUrl(url) {
     return typeof url === 'string' && /^https?:\/\//i.test(url);
@@ -173,17 +185,18 @@ window.App = window.App || {};
         card.appendChild(el('p', 'card__empty', '등록된 메뉴가 없습니다'));
       }
 
-      // 가격 + 원문 보기 (한 줄)
+      // 가격 + 길 찾기 · 원문 보기 (한 줄)
       const foot = el('div', 'card__foot');
       const price = menu ? (menu.price != null ? menu.price : r.price) : null;
       if (price != null) foot.appendChild(el('p', 'card__price', formatPrice(price)));
-      if (isSafeUrl(r.url)) {
-        const link = el('a', 'card__link', '원문 보기');
-        link.href = r.url;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        foot.appendChild(link);
+      const links = el('div', 'card__links');
+      if (r.address) {
+        links.appendChild(externalLink('card__link card__link--map', '📍 길 찾기', NAVER_MAP_SEARCH + encodeURIComponent(r.address)));
       }
+      if (isSafeUrl(r.url)) {
+        links.appendChild(externalLink('card__link', '원문 보기', r.url));
+      }
+      if (links.childNodes.length) foot.appendChild(links);
       if (foot.childNodes.length) card.appendChild(foot);
 
       container.appendChild(card);

@@ -709,8 +709,34 @@ a:focus-visible {
   color: var(--color-text-muted);
 }
 
-.card__link {
+.card__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 12px;
   margin-left: auto;
+}
+
+/* 길 찾기: 눈에 띄는 알약 버튼 */
+.card__link--map {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  transition: background-color 0.2s, transform 0.15s var(--ease);
+}
+
+.card__link.card__link--map::after {
+  content: none;
+}
+
+.card__link.card__link--map:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
+}
+
+.card__link {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-accent);

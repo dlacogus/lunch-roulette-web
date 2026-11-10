@@ -12,11 +12,12 @@ window.App = window.App || {};
     unavailable: false  // localStorage를 쓸 수 없어 메모리에서만 동작
   };
 
+  // address: 네이버 지도 "길 찾기" 검색어 (지번 주소로 검색하면 그 건물에 핀이 찍힌다)
   function createRestaurants() {
     return [
-      { id: 'r1', name: '한신IT타워 구내식당', location: '한신IT타워 B1 101호', hours: '11:00-13:50', price: 7500, url: 'https://구로.kr/cafeteria/한신IT타워구내식당', note: '' },
-      { id: 'r2', name: '더이츠푸드', location: '대륭포스트타워1차 B108호', hours: '11:00-13:30', price: 7500, url: 'https://구로.kr/cafeteria/더이츠푸드', note: '' },
-      { id: 'r3', name: '더삼흥 한식뷔페', location: '에이스하이엔드타워1차 B1', hours: '11:00-14:00', price: 8000, url: 'https://구로.kr/cafeteria/더삼흥한식뷔페', note: '현금가 7,000원 이벤트 (~12/31)' }
+      { id: 'r1', name: '한신IT타워 구내식당', location: '한신IT타워 B1 101호', address: '서울 구로구 구로동 235', hours: '11:00-13:50', price: 7500, url: 'https://구로.kr/cafeteria/한신IT타워구내식당', note: '' },
+      { id: 'r2', name: '더이츠푸드', location: '대륭포스트타워1차 B108호', address: '서울 구로구 구로동 212-8', hours: '11:00-13:30', price: 7500, url: 'https://구로.kr/cafeteria/더이츠푸드', note: '' },
+      { id: 'r3', name: '더삼흥 한식뷔페', location: '에이스하이엔드타워1차 B1', address: '서울 구로구 구로동 235-2', hours: '11:00-14:00', price: 8000, url: 'https://구로.kr/cafeteria/더삼흥한식뷔페', note: '현금가 7,000원 이벤트 (~12/31)' }
     ];
   }
 
@@ -142,6 +143,8 @@ window.App = window.App || {};
   function load() {
     const data = readStoredOrInitial();
     delete data.recommendations; // 추천 기능을 없애기 전에 저장된 값 정리
+    // 식당 정보는 앱에서 고칠 수 없으니 항상 코드의 최신 값을 쓴다 (주소 추가 등이 바로 반영되게)
+    data.restaurants = createRestaurants();
     applyWeeklyMenus(data);
     save(data);
     return data;
