@@ -12,12 +12,16 @@ window.App = window.App || {};
     unavailable: false  // localStorage를 쓸 수 없어 메모리에서만 동작
   };
 
-  // address: 네이버 지도 "길 찾기" 검색어 (지번 주소로 검색하면 그 건물에 핀이 찍힌다)
+  // address: 네이버 지도 위치 검색어 (지번 주소로 검색하면 그 건물에 핀이 찍힌다)
+  // lat/lng: 네이버 지도 길찾기 도착지 좌표 (구로.kr 식당 페이지 값)
   function createRestaurants() {
     return [
-      { id: 'r1', name: '한신IT타워 구내식당', location: '한신IT타워 B1 101호', address: '서울 구로구 구로동 235', hours: '11:00-13:50', price: 7500, url: 'https://구로.kr/cafeteria/한신IT타워구내식당', note: '' },
-      { id: 'r2', name: '더이츠푸드', location: '대륭포스트타워1차 B108호', address: '서울 구로구 구로동 212-8', hours: '11:00-13:30', price: 7500, url: 'https://구로.kr/cafeteria/더이츠푸드', note: '' },
-      { id: 'r3', name: '더삼흥 한식뷔페', location: '에이스하이엔드타워1차 B1', address: '서울 구로구 구로동 235-2', hours: '11:00-14:00', price: 8000, url: 'https://구로.kr/cafeteria/더삼흥한식뷔페', note: '현금가 7,000원 이벤트 (~12/31)' }
+      { id: 'r1', name: '한신IT타워 구내식당', location: '한신IT타워 B1 101호', address: '서울 구로구 구로동 235', lat: 37.4824312, lng: 126.894382, hours: '11:00-13:50', price: 7500, url: 'https://구로.kr/cafeteria/한신IT타워구내식당', note: '' },
+      { id: 'r2', name: '더이츠푸드', location: '대륭포스트타워1차 B108호', address: '서울 구로구 구로동 212-8', lat: 37.4836784, lng: 126.8954191, hours: '11:00-13:30', price: 7500, url: 'https://구로.kr/cafeteria/더이츠푸드', note: '' },
+      { id: 'r3', name: '더삼흥 한식뷔페', location: '에이스하이엔드타워1차 B1', address: '서울 구로구 구로동 235-2', lat: 37.4815354, lng: 126.893435, hours: '11:00-14:00', price: 8000, url: 'https://구로.kr/cafeteria/더삼흥한식뷔페', note: '현금가 7,000원 이벤트 (~12/31)' },
+      // 구로.kr에 점심시간이 석식(17:00-18:30)까지 합쳐 11:10-18:30으로 올라와 있어 그대로 쓴다
+      { id: 'r4', name: '아티스포럼 구내식당', location: '아티스포럼 B1 B104호', address: '서울 구로구 디지털로31길 62', lat: 37.4863156, lng: 126.8924847, hours: '11:10-18:30', price: 7500, url: 'https://구로.kr/cafeteria/아티스테이블', note: '석식 17:00-18:30' },
+      { id: 'r5', name: '푸드포커스', location: '코오롱빌란트2차 B층 101호', address: '서울 구로구 구로동 222-8', lat: 37.4828914, lng: 126.8960338, hours: '11:00-13:30', price: 7500, url: 'https://구로.kr/cafeteria/푸드포커스', note: '' }
     ];
   }
 

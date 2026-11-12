@@ -100,7 +100,7 @@ a:focus-visible {
 }
 
 .app {
-  max-width: 1080px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 28px 24px 40px;
   display: flex;
@@ -429,7 +429,7 @@ a:focus-visible {
    ========================================================= */
 .cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 18px;
   align-items: start;
 }
@@ -691,6 +691,7 @@ a:focus-visible {
 /* 가격 + 원문 보기 */
 .card__foot {
   display: flex;
+  flex-wrap: wrap; /* 좁은 카드에서는 링크가 아래 줄로 */
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -701,6 +702,11 @@ a:focus-visible {
 .card .card__price {
   font-size: 16px;
   font-weight: 800;
+  white-space: nowrap;
+}
+
+.card__link {
+  white-space: nowrap;
 }
 
 .card__empty {
@@ -856,6 +862,24 @@ a:focus-visible {
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* =========================================================
+   조금 좁은 화면: 식당 카드 3열
+   ========================================================= */
+@media (max-width: 1250px) {
+  .cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   중간 폭(태블릿·작은 노트북): 식당 카드 2열
+   ========================================================= */
+@media (max-width: 1100px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -22,8 +22,37 @@ window.App = window.App || {};
     return Number(price).toLocaleString('ko-KR') + '원';
   }
 
-  // 네이버 지도 검색: 주소를 붙이면 그 위치에 핀이 찍히고 "도착" 버튼으로 길 찾기가 된다
+  // 네이버 지도 검색: 주소를 붙이면 그 위치에 핀이 찍힌다
   const NAVER_MAP_SEARCH = 'https://map.naver.com/p/search/';
+
+  // 길찾기 출발지 (회사)
+  const ORIGIN = { name: '한신IT타워', lat: 37.4824312, lng: 126.894382 };
+
+  // 네이버 지도 도보 길찾기: /p/directions/{출발}/{도착}/-/walk
+  // 각 지점은 "경도,위도,이름,,ADDRESS_POI"
+  function naverDirectionsUrl(from, to) {
+    function point(p) {
+      return p.lng + ',' + p.lat + ',' + encodeURIComponent(p.name) + ',,ADDRESS_POI';
+    }
+    return 'https://map.naver.com/p/directions/' + point(from) + '/' + point(to) + '/-/walk';
+  }
+
+  function isSamePlace(a, b) {
+    return Math.abs(a.lat - b.lat) < 0.0002 && Math.abs(a.lng - b.lng) < 0.0002;
+  }
+
+  // 출발지와 같은 건물이면 위치만, 아니면 한신IT타워 → 식당 도보 길찾기
+  function mapLink(r) {
+    const hasCoords = typeof r.lat === 'number' && typeof r.lng === 'number';
+    if (hasCoords && !isSamePlace(r, ORIGIN)) {
+      const a = externalLink('card__link card__link--map', '📍 길 찾기', naverDirectionsUrl(ORIGIN, r));
+      a.title = ORIGIN.name + '에서 걸어가는 길';
+      return a;
+    }
+    if (!r.address) return null;
+    const label = hasCoords ? '📍 같은 건물' : '📍 위치 보기';
+    return externalLink('card__link card__link--map', label, NAVER_MAP_SEARCH + encodeURIComponent(r.address));
+  }
 
   // 새 탭으로 여는 외부 링크
   function externalLink(className, text, href) {
@@ -190,9 +219,8 @@ window.App = window.App || {};
       const price = menu ? (menu.price != null ? menu.price : r.price) : null;
       if (price != null) foot.appendChild(el('p', 'card__price', formatPrice(price)));
       const links = el('div', 'card__links');
-      if (r.address) {
-        links.appendChild(externalLink('card__link card__link--map', '📍 길 찾기', NAVER_MAP_SEARCH + encodeURIComponent(r.address)));
-      }
+      const map = mapLink(r);
+      if (map) links.appendChild(map);
       if (isSafeUrl(r.url)) {
         links.appendChild(externalLink('card__link', '원문 보기', r.url));
       }
