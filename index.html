@@ -4,26 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>오늘 뭐 먹지</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600&family=Noto+Serif+KR:wght@400;600;900&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="masthead">
+    <p class="masthead__eyebrow">구로디지털단지 구내식당 다섯 곳</p>
+    <h1 class="masthead__title">오늘 뭐 먹지</h1>
+    <div class="ornament" aria-hidden="true"></div>
+    <p class="masthead__date" id="today-label"></p>
+  </header>
+
   <div class="app">
     <div class="banners" id="banners" role="status"></div>
 
-    <header class="header">
-      <span class="header__logo" aria-hidden="true">🍱</span>
-      <h1 class="header__title">오늘 뭐 먹지</h1>
-    </header>
+    <div class="controls">
+      <nav class="week-nav" aria-label="주간 이동">
+        <button type="button" class="week-nav__arrow" data-action="prev-week" aria-label="이전 주">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="week-nav__label" id="week-label"></span>
+        <button type="button" class="week-nav__arrow" data-action="next-week" aria-label="다음 주">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9.5 5.5L16 12l-6.5 6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </nav>
 
-    <nav class="week-nav" aria-label="주간 이동">
-      <button type="button" class="week-nav__arrow" data-action="prev-week" aria-label="이전 주">◀</button>
-      <span class="week-nav__label" id="week-label"></span>
-      <button type="button" class="week-nav__arrow" data-action="next-week" aria-label="다음 주">▶</button>
-    </nav>
+      <div class="tabs" id="tabs" role="group" aria-label="요일 선택"></div>
 
-    <div class="tabs" id="tabs" role="group" aria-label="요일 선택"></div>
-
-    <section class="roulette" id="roulette" aria-live="polite"></section>
+      <section class="roulette" id="roulette" aria-live="polite" aria-label="룰렛"></section>
+    </div>
 
     <section class="cards" id="cards"></section>
   </div>

@@ -18,6 +18,39 @@ window.App = window.App || {};
     return b;
   }
 
+  // 인라인 SVG 아이콘 (이모지 대신). 색은 currentColor를 따른다.
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const ICONS = {
+    dice: [
+      ['rect', { x: 3.5, y: 3.5, width: 17, height: 17, rx: 2.5, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.8 }],
+      ['circle', { cx: 8.5, cy: 8.5, r: 1.4, fill: 'currentColor' }],
+      ['circle', { cx: 15.5, cy: 8.5, r: 1.4, fill: 'currentColor' }],
+      ['circle', { cx: 12, cy: 12, r: 1.4, fill: 'currentColor' }],
+      ['circle', { cx: 8.5, cy: 15.5, r: 1.4, fill: 'currentColor' }],
+      ['circle', { cx: 15.5, cy: 15.5, r: 1.4, fill: 'currentColor' }]
+    ],
+    star: [
+      ['path', {
+        d: 'M12 3.5l2.63 5.33 5.87.85-4.25 4.14 1 5.85L12 16.9l-5.25 2.77 1-5.85L3.5 9.68l5.87-.85z',
+        fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linejoin': 'round'
+      }]
+    ]
+  };
+
+  function icon(name, className) {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    svg.setAttribute('class', 'icon' + (className ? ' ' + className : ''));
+    ICONS[name].forEach(function (shape) {
+      const node = document.createElementNS(SVG_NS, shape[0]);
+      Object.keys(shape[1]).forEach(function (key) { node.setAttribute(key, shape[1][key]); });
+      svg.appendChild(node);
+    });
+    return svg;
+  }
+
   function formatPrice(price) {
     return Number(price).toLocaleString('ko-KR') + '원';
   }
@@ -45,12 +78,12 @@ window.App = window.App || {};
   function mapLink(r) {
     const hasCoords = typeof r.lat === 'number' && typeof r.lng === 'number';
     if (hasCoords && !isSamePlace(r, ORIGIN)) {
-      const a = externalLink('card__link card__link--map', '📍 길 찾기', naverDirectionsUrl(ORIGIN, r));
+      const a = externalLink('card__link card__link--map', '길 찾기', naverDirectionsUrl(ORIGIN, r));
       a.title = ORIGIN.name + '에서 걸어가는 길';
       return a;
     }
     if (!r.address) return null;
-    const label = hasCoords ? '📍 같은 건물' : '📍 위치 보기';
+    const label = hasCoords ? '같은 건물' : '위치 보기';
     return externalLink('card__link card__link--map', label, NAVER_MAP_SEARCH + encodeURIComponent(r.address));
   }
 
@@ -80,6 +113,11 @@ window.App = window.App || {};
     labelEl.textContent = App.date.formatWeekRange(weekStart);
   }
 
+  // 상단 띠의 "11월 23일 월요일, 오늘의 점심 차림표"
+  function renderTodayLabel(labelEl, today) {
+    labelEl.textContent = App.date.formatLong(today) + ', 오늘의 점심 차림표';
+  }
+
   // days: Date[] (월~금), selectedDate, today: Date
   function renderTabs(container, days, selectedDate, today) {
     const selectedKey = App.date.toKey(selectedDate);
@@ -105,7 +143,7 @@ window.App = window.App || {};
       );
       tab.appendChild(label);
       if (key === todayKey) {
-        tab.appendChild(el('span', 'tab__today', '오늘'));
+        tab.appendChild(el('span', 'tab__today', '· 오늘'));
       }
       container.appendChild(tab);
     });
@@ -116,7 +154,6 @@ window.App = window.App || {};
   //   isToday, spinning,
   //   result: { restaurant, menu } 룰렛 결과 또는 null,
   //   empty: 룰렛 후보가 0곳인지,
-  //   chosen: { restaurant, menu } 이 날 "여기서 먹을래요"로 기록한 곳 또는 null,
   //   fresh: 결과가 방금 나왔는지 (등장 애니메이션용)
   // }
   function renderRoulette(container, view) {
@@ -124,85 +161,70 @@ window.App = window.App || {};
     container.classList.toggle('roulette--spinning', !!view.spinning);
     container.classList.toggle('roulette--result', !!(view.fresh && view.result));
 
-    const body = el('div', 'roulette__body');
-    body.appendChild(el('p', 'roulette__label', view.isToday ? '오늘 어디 갈까?' : '이 날 어디 갈까?'));
-
-    function describe(prefix, pick) {
-      const parts = [prefix, pick.restaurant.name];
-      if (pick.menu) parts.push(pick.menu.main);
-      return parts.join(' · ');
-    }
-
-    let title;
-    if (view.spinning) {
-      title = el('p', 'roulette__title', '룰렛 돌리는 중…');
-    } else if (view.empty) {
-      title = el('p', 'roulette__title roulette__title--empty', '지금 갈 수 있는 식당이 없어요');
-    } else if (view.result) {
-      title = el('p', 'roulette__title', describe('룰렛 결과', view.result));
-    } else if (view.chosen) {
-      title = el('p', 'roulette__title', describe('선택한 곳', view.chosen));
-    } else {
-      title = el('p', 'roulette__title roulette__title--empty', '룰렛을 돌려 정해 보세요');
-    }
-    body.appendChild(title);
-    container.appendChild(body);
-
-    // "여기서 먹을래요"는 룰렛 결과가 있을 때만. 결과가 이미 기록된 곳이면 "선택 완료 ✓".
-    const resultChosen = !!(view.result && view.chosen && view.result.restaurant.id === view.chosen.restaurant.id);
-    const showDone = resultChosen || (!view.result && !!view.chosen);
     const actions = el('div', 'roulette__actions');
-    const spinBtn = button('btn', '룰렛 돌리기', 'roulette', view.spinning);
-    spinBtn.appendChild(el('span', 'dice', '🎲'));
+    const spinBtn = button('btn btn--spin', null, 'roulette', view.spinning);
+    spinBtn.append(icon('dice', 'dice'), el('span', null, '룰렛 돌리기'));
     actions.appendChild(spinBtn);
-    actions.appendChild(button(
-      'btn btn--primary',
-      showDone ? '선택 완료 ✓' : '여기서 먹을래요',
-      'choose',
-      view.spinning || !view.result || resultChosen
-    ));
     container.appendChild(actions);
+
+    // 안내 문구는 두지 않는다. 돌리는 중·결과·후보 없음일 때만 한 줄로 알린다.
+    let message = null;
+    if (view.spinning) message = '룰렛 돌리는 중…';
+    else if (view.empty) message = '지금 갈 수 있는 식당이 없어요';
+    else if (view.result) {
+      const parts = ['룰렛 결과', view.result.restaurant.name];
+      if (view.result.menu) parts.push(view.result.menu.main);
+      message = parts.join(' · ');
+    }
+    if (message) {
+      const body = el('div', 'roulette__body');
+      body.appendChild(el('p', 'roulette__title', message));
+      container.appendChild(body);
+    }
   }
 
   // rouletteId: 룰렛 결과 식당 id 또는 null
   function renderCards(container, restaurants, dayMenus, rouletteId, favorites) {
     const favs = favorites || [];
     container.replaceChildren();
-    restaurants.forEach(function (r) {
+    restaurants.forEach(function (r, index) {
       const isRoulette = r.id === rouletteId;
       const card = el('article', 'card' + (isRoulette ? ' card--roulette' : ''));
       card.dataset.restaurantId = r.id;
 
+      // 머리: (당첨 표시) → 순번 → 식당명 → 위치 → 영업 상태
       const head = el('div', 'card__head');
+      if (isRoulette) head.appendChild(el('p', 'badge', '룰렛 당첨'));
+      head.appendChild(el('p', 'card__no', '— ' + String(index + 1).padStart(2, '0') + ' —'));
       head.appendChild(el('h2', 'card__name', r.name));
-      const badges = el('div', 'card__badges');
-      badges.appendChild(el('span', 'card__status')); // updateStatuses가 채운다
-      if (isRoulette) badges.appendChild(el('span', 'badge', '🎯 룰렛 당첨'));
-      head.appendChild(badges);
+      if (r.location) head.appendChild(el('p', 'card__meta', r.location));
+      head.appendChild(el('p', 'card__status')); // updateStatuses가 채운다
       card.appendChild(head);
 
-      if (r.location) card.appendChild(el('p', 'card__meta', r.location));
       if (r.note) card.appendChild(el('p', 'card__note', r.note));
 
-      card.appendChild(el('hr', 'card__divider'));
+      const ornament = el('div', 'ornament card__divider');
+      ornament.setAttribute('aria-hidden', 'true');
+      card.appendChild(ornament);
 
       const menu = dayMenus && dayMenus[r.id];
       if (menu) {
-        // 사진 순서 그대로 전부 나열하고, 대표 메뉴(main)는 그 줄을 굵게 + ☆ 버튼.
-        // sides에 main이 없으면(예전 형식) 맨 앞에 넣는다.
-        const items = (menu.sides || []).slice();
-        if (items.indexOf(menu.main) === -1) items.unshift(menu.main);
+        // 대표 메뉴(main)를 맨 첫 줄로 올리고, 나머지는 사진 순서 그대로 나열한다.
+        const items = [menu.main].concat((menu.sides || []).filter(function (item) {
+          return item !== menu.main;
+        }));
 
         const isFav = favs.indexOf(menu.main) !== -1;
         const list = el('ul', 'card__sides');
-        items.forEach(function (item) {
-          if (item !== menu.main) {
+        items.forEach(function (item, i) {
+          if (i > 0) {
             list.appendChild(el('li', null, item));
             return;
           }
           const li = el('li', 'card__item--main');
           li.appendChild(el('span', 'card__main', item));
-          const star = button('fav-btn' + (isFav ? ' fav-btn--on' : ''), isFav ? '★' : '☆', 'favorite');
+          const star = button('fav-btn' + (isFav ? ' fav-btn--on' : ''), null, 'favorite');
+          star.appendChild(icon('star'));
           star.setAttribute('aria-pressed', String(isFav));
           star.setAttribute('aria-label', isFav ? '즐겨찾기 해제' : '즐겨찾기 추가');
           star.title = isFav ? '즐겨찾기 해제' : '즐겨찾기 추가';
@@ -248,7 +270,10 @@ window.App = window.App || {};
       if (isToday) {
         const status = App.status.getStatus(r, at);
         slot.className = 'card__status status-badge status-badge--' + status.state;
-        slot.textContent = status.label;
+        // "영업 중 · 13:50 마감" → 상태와 마감 시각을 따로 꾸밀 수 있게 나눈다
+        const parts = status.label.split(' · ');
+        slot.replaceChildren(el('span', 'status-badge__state', parts[0]));
+        if (parts[1]) slot.appendChild(el('span', 'status-badge__time', parts[1]));
         slot.hidden = !status.label;
         card.classList.toggle('card--closed', status.state === 'closed');
       } else {
@@ -278,6 +303,7 @@ window.App = window.App || {};
   App.render = {
     renderBanners: renderBanners,
     renderWeekLabel: renderWeekLabel,
+    renderTodayLabel: renderTodayLabel,
     renderTabs: renderTabs,
     renderRoulette: renderRoulette,
     renderCards: renderCards,

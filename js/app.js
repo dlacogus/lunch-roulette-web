@@ -3,7 +3,6 @@ window.App = window.App || {};
 
 (function () {
   const D = App.date;
-  const HISTORY_LIMIT = 30;
   const STATUS_REFRESH_MS = 60 * 1000;
 
   // 룰렛 애니메이션: 약 2.5초, 간격 60ms → 400ms
@@ -57,12 +56,6 @@ window.App = window.App || {};
     return state.roulette && state.roulette.dateKey === selectedKey() ? state.roulette : null;
   }
 
-  // 이 날 "여기서 먹을래요"로 기록한 식당
-  function chosenRestaurantId(dateKey) {
-    const entry = state.data.history.find(function (h) { return h.date === dateKey; });
-    return entry ? entry.restaurantId : null;
-  }
-
   function bannerMessages() {
     const status = App.storage.getStatus();
     const messages = [];
@@ -78,13 +71,13 @@ window.App = window.App || {};
     const roulette = currentRoulette();
     const spinning = !!(roulette && roulette.spinning);
     const result = roulette && !spinning ? findRestaurant(roulette.resultId) : null;
-    const chosen = findRestaurant(chosenRestaurantId(key));
 
     // 날짜가 바뀐 렌더에서만 카드 등장 효과, 결과가 막 나온 렌더에서만 당첨 효과
     els.cards.classList.toggle('cards--enter', key !== lastRenderedKey);
     els.cards.classList.toggle('cards--result', freshResult && !!result);
 
     App.render.renderBanners(els.banners, bannerMessages());
+    App.render.renderTodayLabel(els.todayLabel, now());
     App.render.renderWeekLabel(els.weekLabel, state.weekStart);
     App.render.renderTabs(els.tabs, D.getWeekDays(state.weekStart), state.selectedDate, now());
     App.render.renderRoulette(els.roulette, {
@@ -92,7 +85,6 @@ window.App = window.App || {};
       spinning: spinning,
       empty: !!(roulette && roulette.empty),
       result: result ? { restaurant: result, menu: dayMenus[result.id] || null } : null,
-      chosen: chosen ? { restaurant: chosen, menu: dayMenus[chosen.id] || null } : null,
       fresh: freshResult
     });
     App.render.renderCards(
@@ -134,20 +126,6 @@ window.App = window.App || {};
     cancelRoulette();
     state.weekStart = D.addDays(state.weekStart, 7 * direction);
     state.selectedDate = D.addDays(state.selectedDate, 7 * direction);
-    render();
-  }
-
-  // 룰렛 결과를 기록한다. 하루에 한 곳만 기록: 같은 날짜의 이전 선택은 바꿔 쓴다.
-  function chooseResult() {
-    const roulette = currentRoulette();
-    if (!roulette || roulette.spinning || !roulette.resultId) return;
-    const key = selectedKey();
-    const menu = (state.data.menus[key] || {})[roulette.resultId];
-
-    const history = state.data.history.filter(function (h) { return h.date !== key; });
-    history.push({ date: key, restaurantId: roulette.resultId, menu: menu ? menu.main : '' });
-    state.data.history = history.slice(-HISTORY_LIMIT);
-    persist();
     render();
   }
 
@@ -267,7 +245,6 @@ window.App = window.App || {};
       const btn = e.target.closest('[data-action]');
       if (!btn || btn.disabled) return;
       if (btn.dataset.action === 'roulette') spinRoulette();
-      if (btn.dataset.action === 'choose') chooseResult();
     });
 
     els.cards.addEventListener('click', function (e) {
@@ -286,6 +263,7 @@ window.App = window.App || {};
   function init() {
     els.banners = document.getElementById('banners');
     els.weekNav = document.querySelector('.week-nav');
+    els.todayLabel = document.getElementById('today-label');
     els.weekLabel = document.getElementById('week-label');
     els.tabs = document.getElementById('tabs');
     els.roulette = document.getElementById('roulette');

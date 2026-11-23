@@ -55,6 +55,11 @@ window.App = window.App || {};
     return DAY_NAMES[date.getDay()] + ' ' + formatMonthDay(date);
   }
 
+  // "11월 9일 월요일"
+  function formatLong(date) {
+    return (date.getMonth() + 1) + '월 ' + date.getDate() + '일 ' + DAY_NAMES[date.getDay()] + '요일';
+  }
+
   // "11/9 – 11/13"
   function formatWeekRange(weekStart) {
     return formatMonthDay(weekStart) + ' – ' + formatMonthDay(addDays(weekStart, 4));
@@ -73,6 +78,7 @@ window.App = window.App || {};
     getWeekStart: getWeekStart,
     getWeekDays: getWeekDays,
     formatTab: formatTab,
+    formatLong: formatLong,
     formatWeekRange: formatWeekRange,
     getInitialDate: getInitialDate
   };
